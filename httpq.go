@@ -51,6 +51,7 @@ func (h *HTTPQ) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	rtr.Get("/{"+URLKeyParam+"}", h.Consume)
 	rtr.Post("/{"+URLKeyParam+"}", h.Publish)
+	rtr.Get("/stats", h.Stats)
 
 	rtr.ServeHTTP(w, r)
 }
