@@ -31,7 +31,7 @@ func NewConfig() *Config {
 
 func main() {
 	config := NewConfig()
-	httpq := &HTTPQ{}
+	httpq := NewHTTPQ()
 
 	addr := fmt.Sprintf(":%d", config.Port)
 	log.Printf("starting server on %s", addr)
