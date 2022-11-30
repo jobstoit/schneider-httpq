@@ -11,7 +11,6 @@ import (
 
 type Config struct {
 	Port        int    `env:"HTTPQ_PORT" default:"23411"`
-	ServeTLS    bool   `env:"HTTPQ_SERVE_TLS" default:"true"`
 	TLSKeyPath  string `env:"HTTPQ_TLS_KEY_PATH"`
 	TLSCertPath string `env:"HTTPQ_TLS_CERT_PATH"`
 }
@@ -35,8 +34,9 @@ func main() {
 	httpq := &HTTPQ{}
 
 	addr := fmt.Sprintf(":%d", config.Port)
+	log.Printf("starting server on %s", addr)
 
-	if config.ServeTLS {
+	if config.TLSKeyPath != "" && config.TLSCertPath != "" {
 		log.Fatal(http.ListenAndServeTLS(addr, config.TLSKeyPath, config.TLSCertPath, httpq))
 	} else {
 		log.Fatal(http.ListenAndServe(addr, httpq))
