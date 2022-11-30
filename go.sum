@@ -1,2 +1,11 @@
+git.fuyu.moe/Fuyu/assert v0.2.1 h1:F8faRzPp0AhzGDYzv0S6eehbRTb72dc0V2ZMMo39ryo=
+git.fuyu.moe/Fuyu/assert v0.2.1/go.mod h1:Q/wfl8GbNF2ZRkaVOd4zcxr+1MTQ3UZLywWwaxxBzkk=
 github.com/go-chi/chi v1.5.4 h1:QHdzF2szwjqVV4wmByUnTcsbIg7UGaQ0tPF2t5GcAIs=
 github.com/go-chi/chi v1.5.4/go.mod h1:uaf8YgoFazUOkPBG7fxPftUylNumIev9awIWOENIuEg=
+github.com/google/go-cmp v0.4.0 h1:xsAVV57WRhGj6kEIi8ReJzQlHHqcBYCElAvkovg3B/4=
+github.com/google/go-cmp v0.4.0/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
+github.com/jobstoit/strct v1.1.1 h1:UU4uvuhR5IswEyyuVpUIhutYlzrAK+wjqvkW3JSi9MQ=
+github.com/jobstoit/strct v1.1.1/go.mod h1:3AqAyX3truqds8NFk2hBKtc3CgT3q8uMFWvLmzN45k0=
+github.com/jobstoit/tags v1.3.1 h1:Ps7E03lMO/2S8bUDTPUziIFeOVINTTKBSsBIHAQTr6U=
+github.com/jobstoit/tags v1.3.1/go.mod h1:qs8AV0hPXklMd90vWEFeTgscI+uVzaVbDn0VWsKp/iM=
+golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
