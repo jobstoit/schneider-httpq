@@ -4,5 +4,5 @@ import "net/http"
 
 func main() {
 	httpQ := &HTTPQ{}
-	http.ListenAndServe(":23411", httpQ.Handler())
+	http.ListenAndServe(":23411", httpQ.Handler()) // nolint: errcheck
 }
