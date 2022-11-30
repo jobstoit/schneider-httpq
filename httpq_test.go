@@ -24,12 +24,12 @@ func TestPublish(t *testing.T) {
 	httpq := NewHTTPQ()
 	svr := httptest.NewServer(httpq)
 
-	for _, p := range toPublish {
+	for _, pub := range toPublish {
 		wg.Add(1)
-		go func() {
+		go func(i string) {
 			defer wg.Done()
-			expectErr(t, makePubRequest(svr.URL, p, 100))
-		}()
+			expectErr(t, makePubRequest(svr.URL, i, 100))
+		}(pub)
 	}
 
 	wg.Wait()

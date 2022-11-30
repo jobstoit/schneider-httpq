@@ -37,8 +37,8 @@ func main() {
 	addr := fmt.Sprintf(":%d", config.Port)
 
 	if config.ServeTLS {
-		http.ListenAndServeTLS(addr, config.TLSKeyPath, config.TLSCertPath, httpq)
+		log.Fatal(http.ListenAndServeTLS(addr, config.TLSKeyPath, config.TLSCertPath, httpq))
 	} else {
-		http.ListenAndServe(addr, httpq)
+		log.Fatal(http.ListenAndServe(addr, httpq))
 	}
 }
