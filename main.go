@@ -37,7 +37,7 @@ func main() {
 	log.Printf("starting server on %s", addr)
 
 	if config.TLSKeyPath != "" && config.TLSCertPath != "" {
-		log.Fatal(http.ListenAndServeTLS(addr, config.TLSKeyPath, config.TLSCertPath, httpq))
+		log.Fatal(http.ListenAndServeTLS(addr, config.TLSCertPath, config.TLSKeyPath, httpq))
 	} else {
 		log.Fatal(http.ListenAndServe(addr, httpq))
 	}
