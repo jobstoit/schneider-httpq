@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -17,19 +18,19 @@ const (
 )
 
 func TestPublish(t *testing.T) {
-	wg := sync.WaitGroup{}
+	wg := &sync.WaitGroup{}
 
 	toPublish := []string{"test 1", "test 2"}
 
 	httpq := NewHTTPQ()
 	svr := httptest.NewServer(httpq)
 
+	wg.Add(len(toPublish))
 	for _, pub := range toPublish {
-		wg.Add(1)
-		go func(i string) {
+		go func(t *testing.T, wg *sync.WaitGroup, pub string) {
 			defer wg.Done()
-			expectErr(t, makePubRequest(svr.URL, i, 100))
-		}(pub)
+			expectErr(t, makePubRequest(svr.URL, pub, 100))
+		}(t, wg, pub)
 	}
 
 	wg.Wait()
@@ -40,19 +41,19 @@ func TestPublish(t *testing.T) {
 }
 
 func TestConsume(t *testing.T) {
-	wg := sync.WaitGroup{}
+	wg := &sync.WaitGroup{}
 	amount := 2
 
 	httpq := NewHTTPQ()
 	svr := httptest.NewServer(httpq)
 
+	wg.Add(amount)
 	for i := 0; i < amount; i++ {
-		wg.Add(1)
-		go func() {
+		go func(t *testing.T, wg *sync.WaitGroup) {
 			defer wg.Done()
 			_, err := makeSubRequest(svr.URL, 100)
 			expectErr(t, err)
-		}()
+		}(t, wg)
 	}
 
 	wg.Wait()
@@ -62,27 +63,28 @@ func TestConsume(t *testing.T) {
 }
 
 func TestPublishAndConsume(t *testing.T) {
-	wg := sync.WaitGroup{}
+	wg := &sync.WaitGroup{}
 
 	toPublish := []string{"test 1", "test 2", "test 3"}
+	match := strings.Join(toPublish, " ")
 	totalBytes := 0
 	httpq := NewHTTPQ()
 
 	svr := httptest.NewServer(httpq)
 
+	wg.Add(len(toPublish) * 2)
 	for _, p := range toPublish {
-		wg.Add(2)
-		go func() {
+		go func(t *testing.T, wg *sync.WaitGroup, p string) {
 			defer wg.Done()
 			unexpectErr(t, makePubRequest(svr.URL, p, 2000))
-		}()
+		}(t, wg, p)
 
-		go func() {
+		go func(t *testing.T, wg *sync.WaitGroup, match string) {
 			defer wg.Done()
 			res, err := makeSubRequest(svr.URL, 2000)
 			unexpectErr(t, err)
-			eq(t, p, res)
-		}()
+			eq(t, true, strings.Contains(match, res))
+		}(t, wg, match)
 
 		totalBytes += len(p)
 	}
@@ -177,7 +179,7 @@ func unexpectErr(t *testing.T, e error) {
 	}
 }
 
-func eq[V string | int](t *testing.T, expected, actual V) {
+func eq[V string | int | bool](t *testing.T, expected, actual V) {
 	if expected != actual {
 		t.Errorf("expected: %v, but got: %v", expected, actual)
 	}

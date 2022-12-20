@@ -21,25 +21,13 @@ type HTTPQ struct {
 	PubFails int                    // number of publish failures
 	SubFails int                    // number of subscribe failures
 	channels map[string]chan []byte // content of saved messages
-	mutex    *sync.Mutex
-}
-
-func (h HTTPQ) getChannel(key string) chan []byte {
-	_, ok := h.channels[key]
-	if !ok {
-		h.mutex.Lock()
-		defer h.mutex.Unlock()
-
-		h.channels[key] = make(chan []byte)
-	}
-
-	return h.channels[key]
+	mutex    *sync.RWMutex
 }
 
 // NewHTTPQ retursn a new instance of a httpq
 func NewHTTPQ() *HTTPQ {
 	h := &HTTPQ{}
-	h.mutex = &sync.Mutex{}
+	h.mutex = &sync.RWMutex{}
 	h.channels = map[string]chan []byte{}
 
 	return h
@@ -70,17 +58,15 @@ func (h *HTTPQ) Publish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for {
-		select {
-		case ch <- buff.Bytes():
-			h.RxBytes += buff.Len()
-			w.WriteHeader(http.StatusOK)
-			return
-		case <-r.Context().Done():
-			h.PubFails += 1
-			w.WriteHeader(http.StatusRequestTimeout)
-			return
-		}
+	select {
+	case ch <- buff.Bytes():
+		h.RxBytes += buff.Len()
+		w.WriteHeader(http.StatusOK)
+		return
+	case <-r.Context().Done():
+		h.PubFails += 1
+		w.WriteHeader(http.StatusRequestTimeout)
+		return
 	}
 }
 
@@ -89,23 +75,21 @@ func (h *HTTPQ) Publish(w http.ResponseWriter, r *http.Request) {
 func (h *HTTPQ) Consume(w http.ResponseWriter, r *http.Request) {
 	ch := h.getChannel(chi.URLParam(r, URLKeyParam))
 
-	for {
-		select {
-		case <-r.Context().Done():
+	select {
+	case <-r.Context().Done():
+		h.SubFails += 1
+		w.WriteHeader(http.StatusRequestTimeout)
+		return
+	case val := <-ch:
+		c, err := w.Write(val)
+		if err != nil {
 			h.SubFails += 1
-			w.WriteHeader(http.StatusRequestTimeout)
-			return
-		case val := <-ch:
-			c, err := w.Write(val)
-			if err != nil {
-				h.SubFails += 1
-				w.WriteHeader(http.StatusInternalServerError)
-				log.Printf("error writing to body in GET /{key} request: %v", err)
-				return
-			}
-			h.TxBytes += c
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Printf("error writing to body in GET /{key} request: %v", err)
 			return
 		}
+		h.TxBytes += c
+		return
 	}
 }
 
@@ -133,4 +117,29 @@ func (h *HTTPQ) Stats(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (h HTTPQ) getChannel(key string) chan []byte {
+	c, ok := h.checkChannel(key)
+	if !ok {
+		return h.createChannel(key)
+	}
+
+	return c
+}
+
+func (h HTTPQ) checkChannel(key string) (chan []byte, bool) {
+	h.mutex.RLock()
+	defer h.mutex.RUnlock()
+
+	ch, ok := h.channels[key]
+	return ch, ok
+}
+
+func (h HTTPQ) createChannel(key string) chan []byte {
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
+
+	h.channels[key] = make(chan []byte)
+	return h.channels[key]
 }
