@@ -8,7 +8,7 @@ httpq takes the following environment variables:
 HTTPQ_PORT			// Optional set the port on which to run the webserver, defaults to 23411
 HTTPQ_TLS_KEY_PATH		// Optional set the path to the TLS key file, if not set the server will run without TLS
 HTTPQ_TLS_CERT_PATH		// Optional set the path to the TLS certificate file, if not set the server will run without TLS
-``
+```
 
 for example setting up the server with a self signed certificate on port 8080:
 ```sh
